@@ -1,0 +1,368 @@
+<html>
+
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="style-tp.css">
+<title> Compilation et Langages - TP 1.1 </title>
+</head>
+
+<body>
+  <div id="global">
+    <div id="header">
+      <h1> TP Compilation et langages </h1>
+      <p>
+        Module 1 - Génération de code pour le langage <tt>Imp</tt><br/>
+        Sujet 1.1 - Traduction vers un langage avec sauts
+      </p>
+    </div>
+      
+    <div id="content">
+
+      <h2> Mise en route - Manipulation de syntaxe abstraite </h2>
+
+      <h3> Langages : <tt>SourceLocalised</tt> et <tt>Imp</tt> </h3>
+      <p>
+        Un programme <tt>Imp</tt> est formé par des séquences d'instructions
+        qui peuvent être :
+        <ul>
+          <li>d'affichage : <tt>print(e)</tt>, qui affiche un caractère donné
+            par son code ASCII</li>
+          <li>d'affectation : <tt>x := e</tt>, qui affecte une nouvelle valeur
+            à une variable</li>
+        </ul>
+        ainsi que des structures de contrôle usuelles suivantes :
+        <ul>
+          <li>branchement conditionnel : <tt>if(e) { i₁ } else { i₂ }</tt></li>
+          <li>boucle conditionnelle : <tt>while(e) { i }</tt></li>
+        </ul>
+        Les expressions peuvent faire intervenir des constantes entières
+        ou booléennes, des variables (dont une variable spéciae <tt>arg</tt>),
+        et toute combinaison des opérateurs
+        <ul>
+          <li>arithmétiques : <tt>+</tt>, <tt>-</tt>, <tt>*</tt>, <tt>/</tt>, <tt>%</tt>,</li>
+          <li>de comparaison : <tt>==</tt>, <tt>!=</tt>, <tt>&lt;</tt>, <tt>&lt;=</tt>, <tt>&gt;</tt>, <tt>&gt;=</tt>,</li>
+          <li>booléens : <tt>!</tt>, <tt>$$</tt>, <tt>||</tt>.</li>
+        </ul>
+      </p>
+
+      <p>
+        Deux syntaxes abstraites sont associées à ce langage :
+        <ul>
+          <li>une syntaxe brute (<tt>Imp</tt>), fournissant des types pour les
+            expressions et pour les instructions, et définissant un programme
+            comme la combinaison d'une instruction principale et d'une table
+            des symboles,</li>
+          <li>une syntaxe annotée (<tt>SourceLocalised</tt>), représentant des
+            termes identiques en tous points, mais qui associe chaque
+            instruction et chaque expression à une position dans le texte
+            source.</li>
+        </ul>
+        L'analyseur syntaxique fourni (<tt>MlSourceParser.ml</tt>) produit
+        comme résultat un programme en syntaxe abstraite annotée
+        <tt>SourceLocalised</tt>.
+      </p>
+
+      <p>
+        Voici un exemple de programme <tt>Imp</tt> :
+        <pre>
+  var integer i;
+  var integer j;
+  var boolean continue;
+
+  main {
+    continue := true;
+    i := 0;
+
+    while (continue) {
+      continue := false;
+      j := 0;
+      while (j < arg+1) {
+        if (i*i + j*j < arg*arg) {
+          print(46);
+          continue := true
+        } else {
+          print(35)
+        };
+        print(32);
+        j := j+1
+      };
+      print(10);
+      i := i+1
+    }
+  }
+</pre>
+      </p>
+
+      <h3> Travail attendu </h3>
+
+      <p>
+        Téléchargez <a href="TP1.zip">ici</a> le squelette de code servant de
+        base à ce TP. Il contient notamment :
+        <ul>
+          <li>des définitions des syntaxes abstraites brute et annotée
+            (<tt>ImpAST.ml</tt> et <tt>SourceLocalisedAST.ml</tt>) ainsi
+            que quelques définitions générales (<tt>CommonAST.ml</tt>),</li>
+          <li>un analyseur syntaxique étendant celui vu au cours d'ouverture
+            (<tt>MlSourceParser.ml</tt>),</li>
+          <li>les deux fichiers à compléter <tt>SourceToImp.ml</tt> et
+            <tt>SourceTypeChecker.ml</tt>, </li>
+          <li>un fichier principal <tt>GCompilo.ml</tt> </li>
+          <li>un dossier <tt>tests</tt>. </li>
+        </ul>
+        Les autres fichiers (dont le nom contient <tt>Goto</tt>) seront utilisés
+        dans la partie suivante.
+      </p>
+
+      <p>
+        Pour compiler votre code, utilisez <tt>ocamlbuild</tt> et la commande
+        suivante :
+        <pre>  ocamlbuild GCompilo.native</pre>
+        Vous pouvez ensuite utilisez l'exécutable produit
+        (<tt>GCompilo.native</tt>) en lui passant en paramètre un fichier
+        source (extension <tt>.cid</tt>).
+      </p>
+      
+      <p>
+        Les squelettes de code fournis sont tels que le programme s'exécute
+        correctement sur le programme minimal suivant :
+        <pre>  main {}</pre>
+      </p>
+
+      <h4> Échauffement : oubli des annotations </h4>
+      <p>
+        Dans le fichier <tt>SourceToImp.ml</tt>, compléter la fonction
+        <pre>  strip_instruction : SourceLocalisedAST.instruction -> ImpAST.instruction</pre>
+        et créer une fonction
+        <pre>  strip_expression : SourceLocalisedAST.expression -> ImpAST.expression</pre>
+        de sorte que ce module effectue la traduction entre la syntaxe abstraite
+        annotée par des positions (<tt>SourceLocalisedAST</tt>) et la syntaxe
+        abstraite non annotée (<tt>ImpAST</tt>).
+      </p>
+        
+      <h4> Vérification des types </h4>
+      <p>
+        Dans le fichier <tt>SourceTypeChecker.ml</tt>, créer une fonction
+        <pre>  type_expression : type_context -> expression -> typ</pre>
+        de sorte que la fonction <tt>type_expression</tt>, appliquée à un
+        contexte de typage (c'est-à-dire pour l'instant une table des symboles
+        indiquant les types des variables) et une expression annotée
+        <tt>SourceLocalised</tt>, renvoie le type de cette expression
+        si celle-ci est cohérente ou lève une exception
+        <tt>Type_error</tt> en cas de problème.
+      </p>
+
+      <p>
+        Les principes à vérifier sont les suivants :
+        <ul>
+          <li> les constantes entières ont le type <tt>int</tt> et les
+            constantes booléennes le type <tt>bool</tt>,
+          <li> le type d'une variable est donné par la table des symboles, </li>
+          <li> les opérations arithmétiques
+            (<tt>+</tt>, <tt>-</tt>, <tt>*</tt>, <tt>/</tt>, <tt>%</tt>)
+            attendent des opérandes entiers et donnent un résultat entier,
+          </li>
+          <li> les opérations de comparaison
+            (<tt>&lt;</tt>, <tt>&lt;=</tt>, <tt>&gt;</tt>, <tt>&gt;=</tt>)
+            attendent des opérandes entiers et donnent un résultat booléen,
+          </li>
+          <li> les opérations d'égalité/inégalité
+            (<tt>==</tt>, <tt>!=</tt>)
+            attendent des opérandes de types identiques et donnent un résultat
+            booléen,
+          </li>
+          <li> les opérations logiques
+            (<tt>!</tt>, <tt>&&</tt>, <tt>||</tt>)
+            attendantes des opérandes booléens et donnent un résultat booléen.
+          </li>
+        </ul>
+      </p>
+      
+      <p>
+        Puis, dans le même fichier, compléter la fonction
+        <pre>  typecheck_instruction : type_context -> instruction -> unit</pre>
+        prenant en entrée la syntaxe abstraite d'une instruction
+        <tt>SourceLocalised</tt>
+        et vérifiant que chaque expression utilisée est cohérente et
+        utilisée d'une manière légitime. Le programme renverra <tt>()</tt>
+        en cas de succès, et lèvera une exception <tt>Type_error</tt> en cas
+        d'erreur détectée.
+      </p>
+
+      <p>
+        Les principes à vérifier sont les suivants :
+        <ul>
+          <li> une instruction <tt>print</tt> attend un paramètre entier, </li>
+          <li> une construction <tt>if</tt> ou <tt>while</tt> effectue son
+            test sur une expression booléenne. </li>
+          <li> une instruction <tt>:=</tt> requiert que l'expression ait un
+            type correspondant à celui de la variable (tel que donné par la
+            table des symboles).
+        </ul>
+      </p>
+
+      <h2> Sujet - Traduction vers un langage avec sauts </h2>
+      <p>
+        Objectif : remplacer les structures de contrôle <tt>if/else</tt> et
+        <tt>while</tt> d'un programme <tt>Imp</tt> par des instructions de
+        saut de type <tt>goto</tt>.
+      </p>
+
+      <h3> Langage cible : <tt>Goto</tt> </h3>
+      <p>
+        Un programme <tt>Goto</tt> est une séquence d'instructions qui peuvent
+        être
+        <ul>
+          <li> d'affichage : <tt>print(e)</tt> (identique au langage <tt>Imp</tt>), </li>
+          <li> d'affectation : <tt>x := e</tt> (identique au langage <tt>Imp</tt>), </li>
+          <li> de balisage : <tt>label(l)</tt> (pas d'effet à l'exécution,
+            définit une cible pour les sauts), </li>
+          <li> de saut : <tt>goto(l)</tt>, <tt>goto-when(l, e)</tt>. </li>
+        </ul>
+        Les instructions arithmético-booléennes <tt>e</tt> sont les mêmes que
+        dans le langage <tt>Imp</tt>.
+      </p>
+
+      <p>
+        Voici un exemple de programme <tt>Goto</tt> :
+        <pre>
+    continue := true
+    i := 0
+    goto(_label_1)
+  _label_2:
+    continue := false
+    j := 0
+    goto(_label_4)
+  _label_5:
+    goto-when(_label_7, (((i * i) + (j * j)) < (arg * arg)))
+    print(35)
+    goto(_label_8)
+  _label_7:
+    print(46)
+    continue := true
+  _label_8:
+    print(32)
+    j := (j + 1)
+  _label_4:
+    goto-when(_label_5, (j < (arg + 1)))
+  _label_6:
+    print(10)
+    i := (i + 1)
+  _label_1:
+    goto-when(_label_2, continue)
+  _label_3:
+    nop                           
+</pre>
+      </p>
+
+      <p>
+        La syntaxe abstraite des programmes <tt>Goto</tt> réutilise le même
+        type <tt>expression</tt> que la syntaxe abstraite <tt>Imp</tt>, et
+        possède également des constructeurs <tt>Sequence</tt>, <tt>Print</tt> et
+        <tt>Set</tt> identiques.
+        <br/>
+        Le type des instructions contient en revanche les nouveaux
+        constructeurs <tt>Label</tt>, <tt>Goto</tt> et <tt>ConditionalGoto</tt>
+        pour représenter les étiquettes et les instructions de saut.
+      </p>
+
+      <h3> Conventions du compilateur </h3>
+      <p>
+        Lors de la traduction d'un programme <tt>Imp</tt> en programme
+        <tt>Goto</tt>, chaque construction de contrôle est remplacée par une
+        certaine combinaison d'étiquettes et de sauts.
+        Pour que le programme obtenu soit valide les étiquettes doivent toutes
+        être différentes, et aucune ne doit correspondre à l'identifiant d'une
+        variable. Pour cela, chaque étiquette utilisée pour une structure de
+        contrôle aura la forme <tt>_label_*</tt>, où <tt>*</tt> désigne un
+        nombre unique.
+        Par exemple, le programme <tt>Goto</tt> donné en exemple ci-dessus
+        est une traduction légitime du programme <tt>Imp</tt> donné au début
+        du sujet.
+      </p>
+      
+      <p>
+        Le squelette de code fournit une fonction
+        <tt>new_label : unit -> string</tt>
+        qui produit à chaque appel une telle étiquette, dont le numéro est
+        différent de tous les précédents. On obtient donc l'effet voulu en
+        faisant créer toutes les étiquettes par cette fonction.
+      </p>
+
+      <h3> Travail attendu </h3>
+      <p>
+        Vous devez compléter le fichier <tt>ImpToGoto.ml</tt> de sorte que la
+        fonction
+        <pre>  translate_program : ImpAST.program -> GotoAST.program</pre>
+        traduise un programme en syntaxe
+        abstraite <tt>Imp</tt> en un programme en syntaxe abstraite
+        <tt>Goto</tt> correspondant.
+      </p>
+
+      <p>
+        <i>Remarque :</i> vous n'avez travaillé ici que sur les syntaxes
+        abstraites, mais la combinaison de vos fonctions avec l'analyseur
+        syntaxique de <tt>Imp</tt> et l'afficheur de <tt>Goto</tt> fournis
+        vous offre un compilateur complet de <tt>Imp</tt> vers <tt>Goto</tt>.
+      </p>
+
+      <h2> Extensions </h2>
+
+      <h3> Extensions du langage </h3>
+      
+      <h4> Interruptions de boucle </h4>
+      <p>
+        Étendre votre compilateur pour ajouter au langage <tt>Imp</tt> les
+        instructions
+        <ul>
+          <li><tt>break</tt> : quitte une boucle en cours, </li>
+          <li><tt>continue</tt> : ignore la fin d'un tour de boucle en cours.</li>
+        </ul>
+        Dans un cas comme dans l'autre l'effet s'applique à une seule boucle,
+        qui est la boucle en cours la plus interne (vous pouvez consulter la
+        documentation de <tt>C</tt> ou <tt>Java</tt> pour la définition
+        habituelle de ces instructions).
+      </p>
+
+      <p>
+        Cette extension vous demande d'étendre la syntaxe abstraite avec
+        ces deux nouvelles constructions, d'ajouter à l'analyseur syntaxique
+        les règles idoines, et d'ajuster en conséquence la fonction de
+        traduction de <tt>Imp</tt> vers <tt>Goto</tt>.
+        La définition du langage <tt>Goto</tt> ou les outils associés n'ont
+        en revanche pas besoin d'être modifiés.
+      </p>
+
+      <p>
+        L'une des difficultés de cette extension consiste à placer des
+        étiquettes cibles pour ces nouveaux sauts, et à savoir celles qui
+        doivent être utilisées en chaque point du programme.
+      </p>
+      
+      <h4> Boucle inconditionnelle </h4>
+      <p>
+        Étendre votre compilateur pour ajouter au langage <tt>Imp</tt> une
+        boucle <tt>for</tt> de la forme
+        <pre>  for(&lt;init&gt;, &lt;condition&gt;, &lt;incrément&gt;) { &lt;code&gt; }</pre>
+        Exemple d'utilisation :
+        <pre>
+          for(c := 97, c &lt; 123, c := c+1) {
+              print(c);
+          }
+</pre>
+        la variable <tt>c</tt> devant avoir été déclarée au préalable.
+      </p>
+
+      <p>
+        Comme la précédente, cette extension nécessite de compléter l'analyseur
+        syntaxique. Vous pouvez également modifier <tt>Imp</tt>, mais pas
+        <tt>Goto</tt>.
+      </p>
+
+      <h3> Interprétation </h3>
+      <p>
+        Écrire un interpréteur pour le langage <tt>Goto</tt>.
+      </p>
+      
+    </div>
+  </div>
+</body>
