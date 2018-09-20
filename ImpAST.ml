@@ -16,6 +16,8 @@ type instruction =
   | Conditional of expression * instruction * instruction
   | Loop        of expression * instruction
   | Sequence    of instruction * instruction
+  | Break
+  | Continue
   | Nop
 
 type program = {
