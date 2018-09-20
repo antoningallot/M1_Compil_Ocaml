@@ -33,13 +33,20 @@ and type_expression context e = match e.expr with
     
 let rec typecheck_instruction context i = match i.instr with
   | Print e -> check_type context i.i_pos e TypInt
-  | Set (l, e) -> () (* TODO *)
-  | Conditional (e, i1, i2) -> () (* TODO *)
-  | Loop (e, i) -> () (* TODO *)
-  | Sequence (i1, i2) -> () (* TODO *)
-  | Nop -> () (* TODO *)
+  | Set (Identifier(Id name), e) -> check_type context i.i_pos e (Symb_Tbl.find name context.identifier_types)
+  | Conditional (e, i1, i2) ->
+     check_type context i.i_pos e TypBool;
+     typecheck_instruction context i1;
+     typecheck_instruction context i2
+  | Loop (e, i) ->
+     check_type context i.i_pos e TypBool;
+     typecheck_instruction context i;
+  | Sequence (i1, i2) ->
+     typecheck_instruction context i1;
+     typecheck_instruction context i2
+  | Nop -> ()
    
-   
+
 let extract_context p =
   { identifier_types = p.globals; }
     
