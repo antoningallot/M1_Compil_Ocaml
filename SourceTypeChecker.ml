@@ -13,15 +13,31 @@ let rec check_type context pos e ty =
   then ()
   else raise (Type_error(ty, t, pos))
 and type_expression context e = match e.expr with
-  | Literal a ->  type_literal a
+  | Literal l -> type_literal l
   | Location(Identifier(Id name)) -> Symb_Tbl.find name context.identifier_types
   | UnaryOp (Minus, b) -> check_type context e.e_pos b TypInt; TypInt
   | UnaryOp (Not, b) ->  check_type context e.e_pos b TypBool; TypBool
-  (* | BinaryOp (a, b, c) -> *)
+  | BinaryOp (Add, b, c)
+  | BinaryOp (Sub, b, c)
+  | BinaryOp (Mult, b, c)
+  | BinaryOp (Div, b, c)
+  | BinaryOp (Mod, b, c) -> check_type context e.e_pos b TypInt; check_type context e.e_pos c TypInt; TypInt
+  | BinaryOp (Eq, b, c) | BinaryOp (Neq, b, c) -> let t1 = type_expression context b in
+						  let t2 = type_expression context c in
+						  if t1 = t2 then TypBool else raise (Type_error(t1, t2, e.e_pos)) 
+  | BinaryOp (Lt, b, c)
+  | BinaryOp (Le, b, c)
+  | BinaryOp (Gt, b, c)
+  | BinaryOp (Ge, b, c) -> check_type context e.e_pos b TypInt; check_type context e.e_pos c TypInt; TypBool
+  | BinaryOp (And, b, c) | BinaryOp (Or, b, c) -> check_type context e.e_pos b TypBool; check_type context e.e_pos c TypBool; TypBool
     
 let rec typecheck_instruction context i = match i.instr with
   | Print e -> check_type context i.i_pos e TypInt
-  | Nop -> ()
+  | Set (l, e) -> () (* TODO *)
+  | Conditional (e, i1, i2) -> () (* TODO *)
+  | Loop (e, i) -> () (* TODO *)
+  | Sequence (i1, i2) -> () (* TODO *)
+  | Nop -> () (* TODO *)
    
    
 let extract_context p =
