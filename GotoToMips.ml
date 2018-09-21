@@ -13,15 +13,140 @@ let pop  reg = addi sp sp 4 @@ lw reg 0 sp
    Rappel de la convention : le code généré par [translate_expression e] doit
    placer la valeur de l'expression [e] au sommet de la pile.
 *)
-and translate_expression (e: GotoAST.expression) =
-  failwith "Not implemented"
-
+let rec translate_expression (e: GotoAST.expression) = match e with
+  | GotoAST.Literal (Int i) ->
+     li t0 i
+     @@ push t0
+  | GotoAST.Location (Identifier(Id name)) ->
+     la t0 name
+     @@ lw t0 0(t0)
+     @@ push t0
+  | GotoAST.UnaryOp (Minus, e) ->
+     translate_expression e
+     @@ pop t0
+     @@ neg t0 t0
+     @@ push t0
+  | GotoAST.UnaryOp (Not, e) ->
+     translate_expression e
+     @@ pop t0
+     @@ not_ t0 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Add, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ add t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Sub, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ sub t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Mult, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ mul t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Div, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ div t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Mod, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ rem t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Eq, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ seq t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Neq, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ sne t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Lt, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ slt t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Le, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ sle t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Gt, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ sgt t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Ge, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ sge t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (And, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ and_ t0 t1 t0
+     @@ push t0
+  | GotoAST.BinaryOp (Or, e1, e2) ->
+     translate_expression e1
+     @@ translate_expression e2
+     @@ pop t0
+     @@ pop t1
+     @@ or_ t0 t1 t0
+     @@ push t0
+   
 (**
    Fonction de traduction des instructions.
    [translate_instruction : GotoAST.instruction -> Mips.text]
 *)
-let rec translate_instruction (i: GotoAST.instruction) = match i with   
-  | Nop -> nop
+let rec translate_instruction (i: GotoAST.instruction) = match i with
+  | GotoAST.Sequence (i1, i2) ->
+     translate_instruction i1
+     @@ translate_instruction i2
+  | GotoAST.Print e ->
+     translate_expression e
+     @@ pop t0
+     @@ move a0 t0
+     @@ li v0 1
+     @@ syscall
+  | GotoAST.Set (l, e) ->
+     translate_expression e
+     @@ translate_expression l
+     @@ pop t0
+     @@ pop t1
+     @@ sw t1 0(t0)
+  | GotoAST.Label l -> label l
+  | GotoAST.Goto l -> b l
+  | GotoAST.ConditionalGoto (l, e) -> nop (* à faire *)
+  | GotoAST.Nop -> nop
 
 
 (** 
