@@ -1,0 +1,398 @@
+<html>
+
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="style-tp.css">
+<title> Compilation et Langages - TP 1.2 </title>
+</head>
+
+<body>
+  <div id="global">
+    <div id="header">
+      <h1> TP Compilation et langages </h1>
+      <p>
+        Module 1 - Génération de code pour le langage <tt>Imp</tt><br/>
+        Sujet 1.2 - Traduction vers l'assembleur <tt>MIPS</tt>
+      </p>
+    </div>
+      
+    <div id="content">
+
+      <h2> Exercice - Assembleur <tt>MIPS</tt> </h2>
+      <p>
+        Pour télécharger MARS :
+        <a href="https://courses.missouristate.edu/KenVollmar/mars/MARS_4_5_Aug2014/Mars4_5.jar">cliquer ici</a>.
+      </p>
+      
+      <h4> Arithmétique </h4>
+      <p>
+        En supposant que la valeur de la variable <tt>x</tt> est stockée dans
+        le registre <tt>$a0</tt>, écrire du code assembleur <tt>MIPS</tt>
+        affichant le résultat des expressions
+        <pre>  1 + 2 * x</pre>
+        et
+        <pre>  x⁴ - 2*x³ + 3*x² - 4*x</pre>
+          <!-- <pre>  6 + x * (5 - x * (4 + x * (3 - x * (2 + x))))</pre> -->
+      </p>
+      
+      <h4> Sauts </h4>
+      <p>
+        En supposant que la valeur de la variable <tt>n</tt> est stockée dans
+        le registre <tt>$a0</tt>, écrire du code assembleur <tt>MIPS</tt>
+        affichant la valeur de la somme des carrés des nombres de
+        <tt>1</tt> à <tt>n</tt>.
+      </p>
+      
+      <h4> Mémoire : données statiques </h4>
+      <p>
+        Même question que la précédente, en supposant que <tt>n</tt> est stockée
+        dans la zone des données statiques sous l'étiquette <tt>n</tt> et que
+        le résultat doit être enregistré dans la zone des données statiques sous
+        l'étiquette <tt>res</tt>.
+      </p>
+      
+      <h4> Mémoire : pile </h4>
+      <p>
+        En supposant que la valeur de la variable <tt>x</tt> est stockée dans
+        la zone des données statiques sous l'étiquette <tt>x</tt>, écrire du
+        code assembleur <tt>MIPS</tt> plaçant au sommet de la pile le résultat
+        de l'expression
+        <pre>  x⁴ - 2*x³ + 3*x² - 4*x</pre>
+        <!-- <pre>  6 + x * (5 - x * (4 + x * (3 - x * (2 + x))))</pre> -->
+        et n'utilisant pour le calcul que les registres <tt>$t0</tt> et
+        <tt>$t1</tt>, les valeurs intermédiaires étant enregistrées sur la pile.
+      </p>
+
+      
+      <h2> Sujet - Traduction vers l'assembleur <tt>MIPS</tt> </h2>
+      <p>
+        Objectif : traduire un programme <tt>Goto</tt> en un programme
+        <tt>MIPS</tt> correspondant.
+      </p>
+
+      <h3> Conventions du compilateur </h3>
+      <p>
+        <i>Dans les grandes lignes :</i> on va se servir de la pile à la fois
+        pour stocker les résultats intermédiaires des opérations arithmétiques,
+        et pour donner aux instructions <tt>print</tt> et <tt>goto-when</tt>
+        leur paramètre. Les valeurs des variables globales et du paramètre
+        <tt>arg</tt> en revanche seront stockées dans la zone des données
+        statiques.
+      </p>
+
+      <p>
+        <i>En détail :</i>
+        <ul>
+          <li> Les valeurs entières sont représentées nativement comme des mots
+            de 32 bits, et les valeurs booléennes <tt>true</tt> et
+            <tt>false</tt> sont représentées respectivement comme les valeurs
+            entières <tt>-1</tt> et <tt>0</tt>.
+            Chaque valeur occupe 4 octets en mémoire.
+          </li>
+
+          <li>
+            La valeur de la constante spéciale <tt>arg</tt> est stockée dans
+            la zone des données statiques sous l'étiquette <tt>arg</tt>.
+            Elle peut donc être obtenue et placée dans le registre <tt>$t0</tt>
+            avec les deux instructions Mips suivantes :
+<pre>
+  la $t1, arg       # $t1 &lt;- adresse de la donnée arg 
+  lw $t0, 0($t1)    # $t0 &lt;- valeur stockée à l'adresse stockée dans $t1
+</pre>
+          </li>
+
+          <li>
+            De même, la valeur de chaque variable globale est stockée dans la
+            zone des données statiques, en utilisant le nom de la variable
+            comme étiquette.
+          </li>
+
+          <li>
+            Une variable globale qui a été déclarée mais pas encore initialisée
+            a la valeur <tt>0</tt>.
+          </li>
+          
+          <li>
+            La pile a la forme suivante :
+<pre>
+      --|---------|--
+        |   v_0   |   &lt;- fond de la pile, première valeur stockée
+        |---------|
+        |         |
+        |   ...   |
+        |         |
+        |---------|
+        |   v_n   |   &lt;- dernière valeur stockée
+        |---------|
+        |         |   &lt;- pointeur $sp, sommet de la pile
+</pre>
+          </li>
+
+          <li>
+            Une opération unaire (<tt>-</tt> ou <tt>!</tt>) retire de la pile
+            la dernière valeur, et remet à sa place le résultat.
+            Par exemple :
+<pre>
+      --|---------|--                   --|---------|--
+        |    v    |                       |   - v   |
+        |---------|                       |---------|
+        |         |  &lt;- $sp               |         |  &lt;- $sp
+</pre>
+          </li>
+
+          <li>
+            Une opération binaire prend comme premier opérande la dernière
+            valeur de la pile et comme deuxième opérande la valeur précédente.
+            Ces deux valeurs sont retirées de la pile puis le résultat est
+            placé au sommet.
+            Par exemple :
+<pre>
+      --|---------|--                  --|-----------|--
+        |   v_2   |                      | v_1 - v_2 |
+        |---------|                      |-----------|
+        |   v_1   |                      |           |  &lt;- $sp
+        |---------|                      |-----------|
+        |         |  &lt;- $sp              |           |
+</pre>
+          </li>
+
+          <li>
+            L'exécution d'une instruction <tt>print</tt> retire la valeur
+            <tt>v</tt> au sommet de la pile, qu'on suppose être un entier
+            compris entre 0 et 127, et affiche le caractère dont le code ASCII
+            est <tt>v</tt>.
+          </li>
+
+          <li>
+            L'exécution d'une instruction <tt>goto-when</tt> retire la valeur
+            <tt>v</tt> au sommet de la pile, dont on suppose qu'elle
+            représente un booléen, et saute à l'étiquette indiquée si <tt>v</tt>
+            est <tt>true</tt>.
+          </li>
+        </ul>
+      </p>
+
+      <p>
+        De manière générale, le code généré pour une expression <tt>e</tt>
+        doit avoir pour effet d'ajouter au sommet de la pile exactement une
+        donnée : la valeur calculée par l'expression.
+      </p>
+
+      <p>
+        De plus, la pile étant utilisée pour tous les besoins de stockage, il
+        n'est pas utile d'utiliser plus de deux registres pour le calcul d'une
+        expression. Vous pourrez par exemple vous contenter pour cela de
+        <tt>$t0</tt> et <tt>$t1</tt>.
+      </p>
+          
+      <p>
+        Pour manipuler la pile, vous pouvez utiliser les fonctions <tt>push</tt>
+        et <tt>pop</tt> fournies. Étant donné un registre <tt>reg</tt> :
+        <ul>
+          <li><tt>push reg</tt> produit deux instructions MIPS pour placer
+            au sommet de la pile la valeur contenue dans le registre
+            <tt>reg</tt> et incrémenter la taille de la pile.</li>
+          <li><tt>pop  reg</tt> produit deux instructions MIPS pour décrementer
+            la taille de la pile et placer dans le registre <tt>reg</tt> la
+            valeur présente au sommet de la pile.</li>
+        </ul>
+      </p>
+
+      <h3> Notes sur l'utilisation du module Mips </h3>
+
+      <p>
+        Le module Mips définit des fonctions Caml qui portent les mêmes noms
+        que les instructions MIPS, et qui écrivent dans le fichier généré les
+        instructions MIPS correspondantes.
+        Voici quelques éléments saillants utiles aujourd'hui :
+        <ul>
+          <li> Les différents paramètres d'une instruction sont passés avec
+            la syntaxe curryfiée de Caml plutôt qu'avec le formatage Mips.
+            Ainsi :
+            <ul>
+              <li><tt>li&nbsp; r, n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt> devient <tt>&nbsp;li&nbsp; r&nbsp; n</tt></li>
+              <li><tt>add r1, r2, r3&nbsp;</tt> devient <tt>&nbsp;add r1 r2 r3</tt></li>
+              <li><tt>lw&nbsp; r1, i(r2)&nbsp;&nbsp;</tt> devient <tt>&nbsp;lw&nbsp; r1 i&nbsp; r2</tt></li>
+            </ul>
+          </li>
+          
+          <li>
+            Le symbole <tt>$</tt> est omis dans la désignation des registres.
+            Ainsi <tt>$t0</tt> est simplement désigné par <tt>t0</tt> (qui est
+            une constante définie par le module).
+          </li>
+
+          <li>
+            Les étiquettes sont représentées par des chaînes de caractères
+            de Caml.
+          </li>
+          
+          <li>
+            On concatène des instructions ou des fragments de code avec
+            l'opérateur <tt>@@</tt>.
+          </li>
+        </ul>
+          
+      <p>
+        Ainsi, le fragment de code MIPS à gauche est produit avec le code
+        Caml à droite :
+<pre>
+    main:                         |       label "main"
+        li   $t0, 1               |    @@ li   t0 1
+        li   $t1, 7               |    @@ li   t1 7
+        add  $t0, $t0, $t1        |    @@ add  t0 t0 t1
+        subi $sp, $sp, 4          |    @@ subi sp sp 4
+        sw   $t0, 0($sp)          |    @@ sw   t0 0 sp
+        jal print_int             |    @@ jal "print_int"
+        li   $v0, 10              |    @@ li   v0 10
+        syscall                   |    @@ syscall
+    # Fonction d'affichage        |    @@ comment "Fonction d'affichage"
+    print_int:                    |    @@ label "print_int"
+        lw   $a0, 0($sp)          |    @@ lw   a0 0 sp
+        addi $sp, $sp, 4          |    @@ addi sp sp 4
+        li   $v0, 1               |    @@ li   v0 1
+        syscall                   |    @@ syscall
+        jr $ra                    |    @@ jr ra
+</pre>
+  Remarquez de plus que vous pouvez utiliser les deux fonctions Caml fournies
+  <tt>push</tt> et <tt>pop</tt> pour simplifier le code Caml en :
+  <pre>
+                          label "main"
+                       @@ li  t0 1
+                       @@ li  t1 7
+                       @@ add t0 t0 t1
+	   
+		       @@ push t0
+			  
+                       @@ jal "print_int"
+                       @@ li  v0 10
+                       @@ syscall
+                       @@ comment "Fonction d'affichage"
+                       @@ label "print_int"
+
+	               @@ pop a0
+	    
+                       @@ li  v0 1
+                       @@ syscall
+	               @@ jr ra
+  </pre>
+</p>
+
+      <h3> Travail attendu </h3>      
+      <h4> Éléments fournis </h4>
+      <p>
+        Téléchargez <a href="TP2.zip">ici</a> les fichiers complétant le
+        squelette de code du TP de la semaine dernière.
+        Vous trouverez notamment :
+        <ul>
+          <li>le module pour l'écriture de programmes <tt>MIPS</tt>
+            (<tt>Mips.ml</tt>)</li>
+          <li>le fichier à compléter <tt>GotoToMips.ml</tt></li>
+          <li>un fichier principal <tt>Compilo.ml</tt></li>
+        </ul>
+      </p>
+
+      <h4> Tâche à réaliser </h4>
+      <p>
+        Vous devez compléter le fichier <tt>GotoToMips.ml</tt> de sorte que
+        la fonction
+        <pre>  translate_program : GotoAST.program -> Mips.program</pre>
+        traduise tout programme <tt>Goto</tt> donné en syntaxe abstraite en
+        un programme <tt>MIPS</tt> correspondant.
+      </p>
+
+      <p>
+        <i>Remarque :</i> en combinant ce module avec le reste du squelette,
+        vous obtenez un compilateur complet de <tt>Imp</tt> vers <tt>MIPS</tt>.
+      </p>
+
+
+      
+      <h2> Extensions </h2>
+
+      <h3> Moins d'instructions </h3>
+
+      <h4> Utiliser des instructions combinées </h4>
+      <p>
+        En l'état actuel, additionner deux nombres demande dans tous les cas de
+        placer les deux opérandes sur la pile, puis d'effectuer l'addition avec
+        l'instruction <tt>add</tt>.
+        Cependant, le langage <tt>MIPS</tt> propose également une instruction
+        <tt>addi</tt>, capable d'effectuer directement l'addition d'une
+        petite constante à une valeur donnée.
+      </p>
+
+      <p>
+        Objectif : utiliser quand c'est possible l'instruction <tt>addi</tt> ou
+        d'autres instructions similaires.
+      </p>
+
+      <p>
+        Remarque : l'addition étant une opération commutative, <tt>addi</tt>
+        peut être utilisée pour effectuer <tt>x+1</tt>, mais aussi <tt>1+x</tt>.
+      </p>
+      
+      <h4> Simplifier les expressions </h4>
+      <p>
+        Le résultat d'une expression arithmétique constante peut être
+        pré-calculé lors de la compilation pour économiser du temps à
+        l'exécution.
+      </p>
+
+      <p>
+        Objectif : simplifier les expressions simplifiables.
+      </p>
+
+      <p>
+        Remarque : cette simplification peut avoir lieu à différents moments du
+        processus de compilation, par exemple au niveau de la syntaxe abstraite
+        <tt>Goto</tt> ou de la traduction de <tt>Imp</tt> vers <tt>Goto</tt>.
+      </p>
+
+      <h3> Conventions du compilateur </h3>
+      
+      <h4> Utiliser un peu moins la pile </h4>
+      
+      <p>
+        Lors des opérations arithmétiques, l'utilisation systématique de la
+        pile pour stocker le résultat provoque de nombreuses opérations un peu
+        bêtes, notamment quand une valeur est placée au sommet de la pile pour
+        en être retirée aussitôt.
+      </p>
+
+      <p>
+        Objectif : faites en sorte de ne <b>pas</b> placer sur la
+        pile les valeurs dont il est certain qu'elles en seront retirées
+        immédiatement.
+      </p>
+
+      <p>
+        Une manière de répondre à cet exercice consiste à modifier les
+        conventions du compilateur pour qu'à chaque instant, la donnée qui
+        correspondait à la "dernière valeur de la pile" ne soit pas stockée sur
+        la pile mais dans un registre, par exemple <tt>$t0</tt>.
+      </p>
+
+      <h4> Précalculer les adresses </h4>
+
+      <p>
+        Dès la compilation, il est possible de prédire à quelle adresse précise
+        de la pile sera stockée chaque valeur intermédiaire. On peut alors
+        accéder directement aux éléments sans modifier la valeur de <tt>$sp</tt>
+        à chaque opération.
+      </p>
+
+      <p>
+        Objectif : se passer de <tt>push</tt> et <tt>pop</tt> et accéder à
+        toutes les valeurs passées sur la pile par un décalage précalculé à
+        partir d'une adresse de référence.
+      </p>
+
+      <p>
+        Amélioration : utiliser les registres <tt>$t2</tt> à <tt>$t9</tt> pour
+        stocker certaines des valeurs qui seraient sinon allouées sur la pile.
+      </p>
+      
+    </div>
+  </div>
+</body>

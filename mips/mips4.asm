@@ -1,11 +1,12 @@
-lw $s0, n
+la $s0, n
+lw $s1, 0($s0)
 li $t0, 1
 li $t1, 0
 loop:
 	mul $t2, $t0, $t0
 	add $t1, $t1, $t2
 	addi $t0, $t0, 1
-	ble $t0, $s0, loop
+	ble $t0, $s1, loop
 	
 sw $t1, res
 move $a0, $t1

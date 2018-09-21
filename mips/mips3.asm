@@ -1,7 +1,7 @@
 # Init
 li $a0, 3
 
-li $t0, 1
+li $t0, 0
 li $t1, 0
 loop:
 	mul $t2, $t0, $t0
@@ -15,4 +15,3 @@ syscall
 
 li $v0, 10 # Code exit
 syscall
-	
