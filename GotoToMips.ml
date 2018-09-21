@@ -17,6 +17,17 @@ let rec translate_expression (e: GotoAST.expression) = match e with
   | GotoAST.Literal (Int i) ->
      li t0 i
      @@ push t0
+  | GotoAST.Literal (Bool b) ->
+     begin
+     match b with
+     |true ->
+	li t0 (-1)
+	@@ push t0
+     |false ->
+	li t0 0
+	@@ push t0
+     end
+       
   | GotoAST.Location (Identifier(Id name)) ->
      la t0 name
      @@ lw t0 0(t0)
@@ -122,7 +133,18 @@ let rec translate_expression (e: GotoAST.expression) = match e with
      @@ pop t1
      @@ or_ t0 t1 t0
      @@ push t0
-   
+
+(**
+   Fonction de traduction des locations.
+   [translate_location : GotoAST.location -> Mips.text]
+*)
+and translate_location = function
+| GotoAST.Identifier(Id name) ->
+     la t0 name
+     @@ lw t0 0(t0)
+     @@ push t0
+
+       
 (**
    Fonction de traduction des instructions.
    [translate_instruction : GotoAST.instruction -> Mips.text]
@@ -139,13 +161,16 @@ let rec translate_instruction (i: GotoAST.instruction) = match i with
      @@ syscall
   | GotoAST.Set (l, e) ->
      translate_expression e
-     @@ translate_expression l
+     @@ translate_location l
      @@ pop t0
      @@ pop t1
      @@ sw t1 0(t0)
-  | GotoAST.Label l -> label l
+  | GotoAST.Label(Lab l) -> label l
   | GotoAST.Goto l -> b l
-  | GotoAST.ConditionalGoto (l, e) -> nop (* à faire *)
+  | GotoAST.ConditionalGoto (l, e) ->
+     translate_expression e
+     @@ pop t0
+     @@ bne zero t0 l
   | GotoAST.Nop -> nop
 
 
