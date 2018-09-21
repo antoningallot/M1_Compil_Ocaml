@@ -166,8 +166,8 @@ let rec translate_instruction (i: GotoAST.instruction) = match i with
      @@ pop t1
      @@ sw t1 0(t0)
   | GotoAST.Label(Lab l) -> label l (* génère une erreur à la compilation, comprends pas pourquoi... *)
-  | GotoAST.Goto l -> b l
-  | GotoAST.ConditionalGoto (l, e) ->
+  | GotoAST.Goto (Lab l) -> b l
+  | GotoAST.ConditionalGoto (Lab l, e) ->
      translate_expression e
      @@ pop t0
      @@ bne zero t0 l
