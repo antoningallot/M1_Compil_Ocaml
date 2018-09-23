@@ -141,7 +141,6 @@ let rec translate_expression (e: GotoAST.expression) = match e with
 and translate_location = function
 | GotoAST.Identifier(Id name) ->
      la t0 name
-     @@ lw t0 0(t0)
      @@ push t0
 
        
