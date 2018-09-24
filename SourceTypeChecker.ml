@@ -43,7 +43,8 @@ let rec typecheck_instruction context i = match i.instr with
      typecheck_instruction context i;
   | Sequence (i1, i2) ->
      typecheck_instruction context i1;
-     typecheck_instruction context i2
+    typecheck_instruction context i2
+  | Break -> ()
   | Nop -> ()
    
 

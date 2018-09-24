@@ -35,6 +35,7 @@ let rec translate_instruction = function
      ++ translate_instruction(i) (* Code du bloc dans la loop *)
      ++ Gto.Goto(begin_label) (* on reboucle *)
      ++ Gto.Label(exit_label) (* on est sorti *)
+  | Imp.Break -> (* à faire *)
   | Imp.Nop -> Gto.Nop
 and translate_expression = function
   | Imp.Literal a -> Gto.Literal(a)
