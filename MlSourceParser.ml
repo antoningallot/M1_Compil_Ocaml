@@ -17,6 +17,7 @@ type token =
   | VAR
   | INTEGER | BOOLEAN
   | EOF | BOF  (* fin de fichier, début de fichier *)
+  | BREAK
 
 (**
    Structure de données représentant l'entrée en cours de lecture,
@@ -180,6 +181,7 @@ and read_word b =
         | "var" -> VAR
         | "integer" -> INTEGER
         | "boolean" -> BOOLEAN
+	| "break" -> BREAK
 	(* Sinon, c'est un identificateur. *)
 	| id -> IDENT id
     )
@@ -221,6 +223,7 @@ let token_to_string = function
   | STAR -> "STAR"
   | VAR -> "VAR"
   | WHILE -> "WHILE"
+  | BREAK -> "BREAK"
 
       
 (**
@@ -399,6 +402,7 @@ and parse_s_instr b =
                                         expect_token ELSE b;
                                         let i2 = parse_block b in
                                         mk_loc_i (Conditional(e, i1, i2)) b
+    | BREAK -> shift b; mk_loc_i Break b
     | t -> failwith (Printf.sprintf "Bad instruction on token %s" (token_to_string t))
 
 and mk_loc_i instr b =
