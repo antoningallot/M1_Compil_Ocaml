@@ -9,6 +9,7 @@ let rec strip_instruction i = match Src.(i.instr) with
   | Src.Loop (a, b) -> Imp.Loop(strip_expression a, strip_instruction b) 
   | Src.Sequence (a, b) -> Imp.Sequence(strip_instruction a, strip_instruction b)
   | Src.Break -> Imp.Break
+  | Src.Continue -> Imp.Continue
   | Src.Nop -> Imp.Nop
 and strip_expression i = match Src.(i.expr) with
   | Src.Literal a -> Imp.Literal(a)

@@ -29,6 +29,7 @@ and instruction =
   | Loop        of localised_expression * localised_instruction
   | Sequence    of localised_instruction * localised_instruction
   | Break
+  | Continue
   | Nop
 
 let mk_instr instr l c = { instr = instr; i_pos = l, c }

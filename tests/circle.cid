@@ -1,18 +1,18 @@
 var integer i;
 var integer j;
-var boolean continue;
+var boolean continuee;
 
 main {
-  continue := true;
+  continuee := true;
   i := 0;
 
-  while (continue) {
-    continue := false;
+  while (continuee) {
+    continuee := false;
     j := 0;
     while (j < arg+1) {
       if (i*i + j*j < arg*arg) {
         print(46);
-        continue := true
+        continuee := true
       } else {
         print(35)
       };

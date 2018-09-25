@@ -18,6 +18,9 @@ type token =
   | INTEGER | BOOLEAN
   | EOF | BOF  (* fin de fichier, début de fichier *)
   | BREAK
+  | CONTINUE
+  | FOR
+  | COMMA
 
 (**
    Structure de données représentant l'entrée en cours de lecture,
@@ -99,6 +102,7 @@ let rec read_token b =
     | '|' -> shift b; read_or b
     | '!' -> shift b; NOT
     | ';' -> shift b; SEMI
+    | ',' -> shift b; COMMA
     (* Lexème potentiellement formé de plusieurs caractères : transition vers
        un nouvel état, c'est-à-dire appel d'une autre fonction.
        Si besoin, on initialise le curseur de début de lexème à ce moment. *)
@@ -182,6 +186,8 @@ and read_word b =
         | "integer" -> INTEGER
         | "boolean" -> BOOLEAN
 	| "break" -> BREAK
+	| "continue" -> CONTINUE
+	| "for" -> FOR
 	(* Sinon, c'est un identificateur. *)
 	| id -> IDENT id
     )
@@ -224,6 +230,8 @@ let token_to_string = function
   | VAR -> "VAR"
   | WHILE -> "WHILE"
   | BREAK -> "BREAK"
+  | CONTINUE -> "CONTINUE"
+  | FOR -> "FOR"
 
       
 (**
@@ -403,6 +411,8 @@ and parse_s_instr b =
                                         let i2 = parse_block b in
                                         mk_loc_i (Conditional(e, i1, i2)) b
     | BREAK -> shift b; mk_loc_i Break b
+    | CONTINUE -> shift b; mk_loc_i Break b
+    | FOR -> shift b; expect_token LP b; let i = parse_s_instr b in expect_token let e = parse_expression
     | t -> failwith (Printf.sprintf "Bad instruction on token %s" (token_to_string t))
 
 and mk_loc_i instr b =

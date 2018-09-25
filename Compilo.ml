@@ -22,7 +22,7 @@ let () =
   let prog = SourceToImp.strip_program prog in
   let prog = ImpToGoto.translate_program prog in
   let asm = GotoToMips.translate_program prog in
-  let output_file = (Filename.chop_suffix file ".cid") ^ ".gto" in
+  let output_file = (Filename.chop_suffix file ".cid") ^ ".asm" in
   let out = open_out output_file in
   let outf = formatter_of_out_channel out in
   Mips.print_program outf asm;

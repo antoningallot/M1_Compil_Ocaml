@@ -45,6 +45,7 @@ let rec typecheck_instruction context i = match i.instr with
      typecheck_instruction context i1;
     typecheck_instruction context i2
   | Break -> ()
+  | Continue -> ()
   | Nop -> ()
    
 
