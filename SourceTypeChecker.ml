@@ -40,7 +40,12 @@ let rec typecheck_instruction context i = match i.instr with
      typecheck_instruction context i2
   | Loop (e, i) ->
      check_type context i.i_pos e TypBool;
-     typecheck_instruction context i;
+    typecheck_instruction context i;
+  | ForLoop (i_init, e_cond, i_incr, i) ->
+     typecheck_instruction context i_init;
+    check_type context i.i_pos e_cond TypBool;
+    typecheck_instruction context i_incr;
+    typecheck_instruction context i
   | Sequence (i1, i2) ->
      typecheck_instruction context i1;
     typecheck_instruction context i2

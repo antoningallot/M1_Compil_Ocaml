@@ -15,6 +15,7 @@ type instruction =
   | Set         of location   * expression
   | Conditional of expression * instruction * instruction
   | Loop        of expression * instruction
+  | ForLoop     of instruction * expression * instruction * instruction
   | Sequence    of instruction * instruction
   | Break
   | Continue

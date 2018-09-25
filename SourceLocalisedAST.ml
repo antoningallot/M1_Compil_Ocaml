@@ -27,6 +27,7 @@ and instruction =
   | Conditional of localised_expression * localised_instruction
                                         * localised_instruction
   | Loop        of localised_expression * localised_instruction
+  | ForLoop     of localised_instruction * localised_expression * localised_instruction * localised_instruction
   | Sequence    of localised_instruction * localised_instruction
   | Break
   | Continue

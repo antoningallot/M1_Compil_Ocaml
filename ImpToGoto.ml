@@ -38,6 +38,21 @@ let rec translate_instruction i =
      ++ translate_instruction_loop i begin_label exit_label (* Code du bloc dans la loop *)
      ++ Gto.Goto(begin_label) (* on reboucle *)
      ++ Gto.Label(exit_label) (* on est sorti *)
+  | Imp.ForLoop (i_init, e_cond, i_incr, i) ->
+     let begin_label = new_label()
+     and loop_label = new_label()
+     and exit_label = new_label()
+     in
+     translate_instruction i_init
+     ++ Gto.Label(begin_label) (* begin *)
+     ++ Gto.ConditionalGoto(loop_label, translate_expression e_cond)
+     ++ Gto.Goto(exit_label) (* sortie de boucle *)
+     ++ Gto.Label(loop_label) (* Bloc loop *)
+     ++ translate_instruction_loop i begin_label exit_label (* Code du bloc dans la loop *)
+     ++ translate_instruction i_incr (* on incrémente, pas besoin de passer dans une gestion interne à la boucle *)
+     ++ Gto.Goto(begin_label) (* on reboucle *)
+     ++ Gto.Label(exit_label) (* on est sorti *)
+       
   | Imp.Break -> raise (Break_Continue_outside_loop)
   | Imp.Continue -> raise (Break_Continue_outside_loop)
   | Imp.Nop -> Gto.Nop

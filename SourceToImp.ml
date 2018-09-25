@@ -6,7 +6,9 @@ let rec strip_instruction i = match Src.(i.instr) with
   | Src.Print a -> Imp.Print(strip_expression a)
   | Src.Set (a, b)-> Imp.Set(strip_location a, strip_expression b)
   | Src.Conditional (a, b, c) -> Imp.Conditional(strip_expression a, strip_instruction b, strip_instruction c) 
-  | Src.Loop (a, b) -> Imp.Loop(strip_expression a, strip_instruction b) 
+  | Src.Loop (a, b) -> Imp.Loop(strip_expression a, strip_instruction b)
+  | Src.ForLoop (i_init, e_cond, i_incr, i) ->
+     Imp.ForLoop(strip_instruction i_init, strip_expression e_cond, strip_instruction i_incr, strip_instruction i)
   | Src.Sequence (a, b) -> Imp.Sequence(strip_instruction a, strip_instruction b)
   | Src.Break -> Imp.Break
   | Src.Continue -> Imp.Continue

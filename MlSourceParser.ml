@@ -412,7 +412,14 @@ and parse_s_instr b =
                                         mk_loc_i (Conditional(e, i1, i2)) b
     | BREAK -> shift b; mk_loc_i Break b
     | CONTINUE -> shift b; mk_loc_i Break b
-    | FOR -> shift b; expect_token LP b; let i = parse_s_instr b in expect_token let e = parse_expression
+    | FOR -> shift b; expect_token LP b; let i_init = parse_s_instr b in
+					 expect_token COMMA b;
+					 let e_cond = parse_expr b in
+					 expect_token COMMA b;
+					 let i_incr = parse_s_instr b in
+					 expect_token RP b;
+					 let i = parse_block b in
+					 mk_loc_i (ForLoop(i_init, e_cond, i_incr, i)) b
     | t -> failwith (Printf.sprintf "Bad instruction on token %s" (token_to_string t))
 
 and mk_loc_i instr b =

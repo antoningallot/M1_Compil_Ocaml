@@ -1,0 +1,32 @@
+j
+i
+continue
+arg
+
+  continue := true
+  i := 0
+_label_1:
+  goto-when(_label_2, continue)
+  goto(_label_3)
+_label_2:
+  continue := false
+  j := 0
+_label_4:
+  goto-when(_label_5, (j < (arg + 1)))
+  goto(_label_6)
+_label_5:
+  goto-when(_label_7, (((i * i) + (j * j)) < (arg * arg)))
+  print(35)
+  goto(_label_8)
+_label_7:
+  print(46)
+  continue := true
+_label_8:
+  print(32)
+  j := (j + 1)
+  goto(_label_4)
+_label_6:
+  print(10)
+  i := (i + 1)
+  goto(_label_1)
+_label_3:
