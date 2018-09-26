@@ -1,18 +1,20 @@
-var boolean continuee;
+var boolean cun;
+var boolean cdeux;
 var integer i;
 
 main {
-  continuee := true;
+  cun := true;
+  cdeux := true;
   i := 0;
   
-  while (continuee) {
-    if(i > 2){
-        break
-    } else {
-     
+  while (cun) {
+    cun := false;
+    while(cdeux) {
+      print(10);
+      break;
+      print(53)
     };
-    print(35);
-    i := i + 1
-  };
-  print(27)
+    break;
+    print(20)
+  }
 }

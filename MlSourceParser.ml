@@ -232,6 +232,7 @@ let token_to_string = function
   | BREAK -> "BREAK"
   | CONTINUE -> "CONTINUE"
   | FOR -> "FOR"
+  | COMMA -> "COMMA"
 
       
 (**

@@ -31,32 +31,38 @@ let rec translate_instruction i =
      and loop_label = new_label()
      and exit_label = new_label()
      in
-     Gto.Label(begin_label) (* begin *)
+     Gto.Label(begin_label) (* Début de la boucle avant évaluation de la condition *)
      ++ Gto.ConditionalGoto(loop_label, translate_expression e)
-     ++ Gto.Goto(exit_label) (* sortie de boucle *)
-     ++ Gto.Label(loop_label) (* Bloc loop *)
-     ++ translate_instruction_loop i begin_label exit_label (* Code du bloc dans la loop *)
-     ++ Gto.Goto(begin_label) (* on reboucle *)
-     ++ Gto.Label(exit_label) (* on est sorti *)
+     ++ Gto.Goto(exit_label) (* Sortie de boucle *)
+     ++ Gto.Label(loop_label) (* Début de l'intérieur de la boucle *)
+     ++ translate_instruction_loop i begin_label exit_label (* Traduction du bloc de code dans la boucle *)
+     ++ Gto.Goto(begin_label) (* On boucle *)
+     ++ Gto.Label(exit_label) (* On est sortie *)
   | Imp.ForLoop (i_init, e_cond, i_incr, i) ->
      let begin_label = new_label()
      and loop_label = new_label()
      and exit_label = new_label()
      in
      translate_instruction i_init
-     ++ Gto.Label(begin_label) (* begin *)
+     ++ Gto.Label(begin_label) (* Début de la boucle avant évaluation de la condition *)
      ++ Gto.ConditionalGoto(loop_label, translate_expression e_cond)
-     ++ Gto.Goto(exit_label) (* sortie de boucle *)
-     ++ Gto.Label(loop_label) (* Bloc loop *)
-     ++ translate_instruction_loop i begin_label exit_label (* Code du bloc dans la loop *)
-     ++ translate_instruction i_incr (* on incrémente, pas besoin de passer dans une gestion interne à la boucle *)
-     ++ Gto.Goto(begin_label) (* on reboucle *)
-     ++ Gto.Label(exit_label) (* on est sorti *)
+     ++ Gto.Goto(exit_label) (* Sortie de boucle *)
+     ++ Gto.Label(loop_label) (* Début de l'intérieur de la boucle *)
+     ++ translate_instruction_loop i begin_label exit_label (* Traduction du bloc de code dans la boucle *)
+     ++ translate_instruction i_incr (* On incrémente, pas besoin de passer dans une gestion interne à la boucle *)
+     ++ Gto.Goto(begin_label) (* On boucle *)
+     ++ Gto.Label(exit_label) (* On est sortie *)
        
-  | Imp.Break -> raise (Break_Continue_outside_loop)
-  | Imp.Continue -> raise (Break_Continue_outside_loop)
+  | Imp.Break -> raise (Break_Continue_outside_loop) (* Pas de 'break' en dehors d'une boucle *)
+  | Imp.Continue -> raise (Break_Continue_outside_loop) (* Pas de 'continue' en dehors d'une boucle *)
   | Imp.Nop -> Gto.Nop
-     
+(**
+   Fonction de traduction des instructions dans une boucle.
+   [translate_instruction_loop : ImpAST.instruction -> label -> label -> GtoAST.instruction]
+
+   Utilisation d'une fonction auxiliaire possédant le label de début et de fin d'une boucle dans ses paramètres
+   pour la gestion des instructions 'break' et 'continue'.
+*)     
 and translate_instruction_loop i b_label e_label =
   match i with
   | Imp.Break -> Gto.Goto(e_label)
@@ -73,14 +79,14 @@ and translate_instruction_loop i b_label e_label =
      ++ Gto.Label(then_label) (* Bloc then *)
      ++ translate_instruction_loop i1 b_label e_label (* Code du bloc then *)
      ++ Gto.Label(end_label)
-  | _ -> translate_instruction i 
-     
+  | _ -> translate_instruction i (* Toute instruction qui ne peut pas contenir de break/continue appartenant à cette boucle *)
+
 and translate_expression = function
   | Imp.Literal l -> Gto.Literal(l)
   | Imp.Location l -> Gto.Location(translate_location l)
   | Imp.UnaryOp (op, Imp.Literal l) -> Gto.UnaryOp(op, Gto.Literal(l))
   | Imp.UnaryOp (op, e) -> Gto.UnaryOp(op, translate_expression e)
-  | Imp.BinaryOp (op, Imp.Literal l1, Imp.Literal l2) -> Gto.BinaryOp(op, Gto.Literal l1, Gto.Literal l2)
+  | Imp.BinaryOp (op, Imp.Literal l1, Imp.Literal l2) -> Gto.BinaryOp(op, Gto.Literal l1, Gto.Literal l2) (* Gestion des expressions arithmétiques constantes de manière optimisé *)
   | Imp.BinaryOp (op, e1, e2) -> Gto.BinaryOp(op, translate_expression e1, translate_expression e2)
 and translate_location = function
   | Imp.Identifier id -> Gto.Identifier(id)

@@ -13,7 +13,7 @@ let pop  reg = addi sp sp 4 @@ lw reg 0 sp
    Rappel de la convention : le code généré par [translate_expression e] doit
    placer la valeur de l'expression [e] au sommet de la pile.
 
-   La fonction est optimisé de façon à éviter de dépiler immédiatement un élément qui
+   Les fonctions translates sont optimisées de façon à éviter de dépiler immédiatement un élément qui
    vient d'etre empilé.
    Dans le cadre de cette optimisation, la gestion des opérateur binaire (a op b) se fait de la façon suivante :
        - on traduit 'a' (via appel récursif) qui se retrouve dans t0
@@ -21,7 +21,7 @@ let pop  reg = addi sp sp 4 @@ lw reg 0 sp
        - on stock donc 'a' sur le dessus de la pile (push t0)
        - on traduit 'b' (appel récursif) qui se retrouve dans t0
        - on récupère 'a' dans un autre registre que t0 (pop t1)
-       - on effectue l'opération t1 op t0 (dans cette ordre pour respécter les opérations non commutatives).
+       - on effectue l'opération t1 op t0 (dans cette ordre pour respécter les opérations non commutatives)
 *)
 let rec translate_expression (e: GotoAST.expression) = match e with
   | GotoAST.Literal (Int i) ->
@@ -249,12 +249,10 @@ let translate_program program =
   { text; data }
 
 
-
-
-
-(* code de traduction Goto ==> Mips initial, sans optimisation de la pile *)
+(* Code de traduction Goto ==> Mips initial, sans optimisation de la pile *)
     
-    (* let rec translate_expression (e: GotoAST.expression) = match e with
+(* 
+let rec translate_expression (e: GotoAST.expression) = match e with
   | GotoAST.Literal (Int i) ->
      li t0 i
      @@ push t0

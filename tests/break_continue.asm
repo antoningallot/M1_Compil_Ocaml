@@ -8,11 +8,14 @@ init_end:
 	li $t0, -1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	la $t0, continuee
+	la $t0, cun
+	addi $sp, $sp, 4
+	lw $t1, 0($sp)
+	sw $t1, 0($t0)
+	li $t0, -1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+	la $t0, cdeux
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
@@ -20,84 +23,46 @@ init_end:
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	la $t0, i
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
 _label_1:
-	la $t0, continuee
+	la $t0, cun
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	bne $zero, $t0, _label_2
 	b _label_3
 _label_2:
-	la $t0, i
-	lw $t0, 0($t0)
+	li $t0, 0
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	li $t0, 2
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	addi $sp, $sp, 4
-	lw $t1, 0($sp)
-	sgt $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	bne $zero, $t0, _label_4
-	b _label_5
-_label_4:
-	b _label_3
-_label_5:
-	li $t0, 35
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	move $a0, $t0
-	li $v0, 1
-	syscall
-	la $t0, i
-	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	li $t0, 1
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	addi $sp, $sp, 4
-	lw $t1, 0($sp)
-	add $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	la $t0, i
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+	la $t0, cun
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
-	b _label_1
-_label_3:
-	li $t0, 27
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+_label_4:
+	la $t0, cdeux
+	lw $t0, 0($t0)
+	bne $zero, $t0, _label_5
+	b _label_6
+_label_5:
+	li $t0, 10
 	move $a0, $t0
 	li $v0, 1
 	syscall
+	b _label_6
+	li $t0, 53
+	move $a0, $t0
+	li $v0, 1
+	syscall
+	b _label_4
+_label_6:
+	b _label_3
+	li $t0, 20
+	move $a0, $t0
+	li $v0, 1
+	syscall
+	b _label_1
+_label_3:
 	li $v0, 10
 	syscall
 atoi:
@@ -125,7 +90,9 @@ atoi_end:
 .data
 i:
 	.word 0
-continuee:
+cun:
+	.word 0
+cdeux:
 	.word 0
 arg:
 	.word 0
