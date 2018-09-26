@@ -5,35 +5,24 @@
 	la $t0, arg
 	sw $v0, 0($t0)
 init_end:
-	li $t0, 5
+	li $t0, 1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
-	move $a0, $t0
-	li $v0, 1
-	syscall
-_label_1:
-	la $t0, i
-	lw $t0, 0($t0)
+	addi $t0, $t0, 1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	li $t0, 5
+	la $t0, i
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
-	slt $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	bne $zero, $t0, _label_2
-	b _label_3
-_label_2:
-	li $t0, 5
+	sw $t1, 0($t0)
+	la $t0, i
+	lw $t0, 0($t0)
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	addi $sp, $sp, 4
@@ -41,16 +30,6 @@ _label_2:
 	move $a0, $t0
 	li $v0, 1
 	syscall
-	li $t0, 7
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	move $a0, $t0
-	li $v0, 1
-	syscall
-	b _label_1
-_label_3:
 	li $v0, 10
 	syscall
 atoi:

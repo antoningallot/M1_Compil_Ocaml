@@ -76,10 +76,12 @@ and translate_instruction_loop i b_label e_label =
   | _ -> translate_instruction i 
      
 and translate_expression = function
-  | Imp.Literal a -> Gto.Literal(a)
-  | Imp.Location a -> Gto.Location(translate_location a)
-  | Imp.UnaryOp (a, b) -> Gto.UnaryOp(a, translate_expression b)
-  | Imp.BinaryOp (a, b, c) -> Gto.BinaryOp(a, translate_expression b, translate_expression c)
+  | Imp.Literal l -> Gto.Literal(l)
+  | Imp.Location l -> Gto.Location(translate_location l)
+  | Imp.UnaryOp (op, Imp.Literal l) -> Gto.UnaryOp(op, Gto.Literal(l))
+  | Imp.UnaryOp (op, e) -> Gto.UnaryOp(op, translate_expression e)
+  | Imp.BinaryOp (op, Imp.Literal l1, Imp.Literal l2) -> Gto.BinaryOp(op, Gto.Literal l1, Gto.Literal l2)
+  | Imp.BinaryOp (op, e1, e2) -> Gto.BinaryOp(op, translate_expression e1, translate_expression e2)
 and translate_location = function
   | Imp.Identifier id -> Gto.Identifier(id)
      

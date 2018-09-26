@@ -1,0 +1,6 @@
+var integer i;
+
+main {
+  i := 1 + 1;
+  print(i)
+}

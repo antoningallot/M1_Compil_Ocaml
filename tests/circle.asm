@@ -8,11 +8,7 @@ init_end:
 	li $t0, -1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	la $t0, continue
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+	la $t0, continuee
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
@@ -20,31 +16,19 @@ init_end:
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	la $t0, i
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
 _label_1:
-	la $t0, continue
+	la $t0, continuee
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	bne $zero, $t0, _label_2
 	b _label_3
 _label_2:
 	li $t0, 0
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	la $t0, continue
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+	la $t0, continuee
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
@@ -52,10 +36,6 @@ _label_2:
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	la $t0, j
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
@@ -66,27 +46,10 @@ _label_4:
 	subi $sp, $sp, 4
 	la $t0, arg
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	li $t0, 1
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	addi $sp, $sp, 4
-	lw $t1, 0($sp)
-	add $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+	addi $t0, $t0, 1
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	slt $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	bne $zero, $t0, _label_5
 	b _label_6
 _label_5:
@@ -96,10 +59,6 @@ _label_5:
 	subi $sp, $sp, 4
 	la $t0, i
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	mul $t0, $t1, $t0
@@ -111,17 +70,9 @@ _label_5:
 	subi $sp, $sp, 4
 	la $t0, j
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	mul $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	add $t0, $t1, $t0
@@ -133,114 +84,56 @@ _label_5:
 	subi $sp, $sp, 4
 	la $t0, arg
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	mul $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	slt $t0, $t1, $t0
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	bne $zero, $t0, _label_7
 	li $t0, 35
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	move $a0, $t0
 	li $v0, 1
 	syscall
 	b _label_8
 _label_7:
 	li $t0, 46
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	move $a0, $t0
 	li $v0, 1
 	syscall
 	li $t0, -1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
-	la $t0, continue
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
+	la $t0, continuee
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
 _label_8:
 	li $t0, 32
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	move $a0, $t0
 	li $v0, 1
 	syscall
 	la $t0, j
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	li $t0, 1
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	addi $sp, $sp, 4
-	lw $t1, 0($sp)
-	add $t0, $t1, $t0
+	addi $t0, $t0, 1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	la $t0, j
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
 	b _label_4
 _label_6:
 	li $t0, 10
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	move $a0, $t0
 	li $v0, 1
 	syscall
 	la $t0, i
 	lw $t0, 0($t0)
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	li $t0, 1
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	addi $sp, $sp, 4
-	lw $t1, 0($sp)
-	add $t0, $t1, $t0
+	addi $t0, $t0, 1
 	sw $t0, 0($sp)
 	subi $sp, $sp, 4
 	la $t0, i
-	sw $t0, 0($sp)
-	subi $sp, $sp, 4
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	lw $t1, 0($sp)
 	sw $t1, 0($t0)
@@ -275,7 +168,7 @@ j:
 	.word 0
 i:
 	.word 0
-continue:
+continuee:
 	.word 0
 arg:
 	.word 0
