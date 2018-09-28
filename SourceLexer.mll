@@ -43,10 +43,12 @@ rule token = parse
   | ' ' | '\t' 
       { token lexbuf }
   | '\n'
-      { token lexbuf }
-  (* Commentaires *)
-  | "//"[^'\n']*('\n'|eof)
-      { token lexbuf }
+      { new_line lexbuf; token lexbuf }
+  (* Gestion des commentaires *)
+  | "//"
+      { short_comment lexbuf }
+  | "/*"
+      { long_comment lexbuf }
   (* Les chaînes alphabétiques sont traitées par la fonction [id_or_keyword]
      pour être associées à des mots-clés ou des identifiants. *)
   | alpha+
@@ -105,4 +107,25 @@ rule token = parse
       { EOF }
   (* Caractères non reconnus *)
   | _
-      { failwith ("Unknown character : (line : %d, character :%d) " ^ (lexeme lexbuf)) }
+      { 
+	failwith ("Unknown character : (line : " ^ (string_of_int lexbuf.lex_curr_p.pos_lnum) ^
+		     ", character :" ^ (string_of_int (lexbuf.lex_curr_p.pos_cnum - lexbuf.lex_curr_p.pos_bol)) ^ ") " ^ (lexeme lexbuf)) }
+
+
+and short_comment = parse
+    |"\n"
+	{ new_line lexbuf; token lexbuf }
+    |eof
+	{ EOF }
+    |_
+	{ short_comment lexbuf }
+
+and long_comment = parse
+    | "*/"
+	{ token lexbuf }
+    | eof
+	{ failwith ("comment not closed before end of file") }
+    | "\n"
+	{ new_line lexbuf; long_comment lexbuf }
+    | _
+	{ long_comment lexbuf }
