@@ -45,7 +45,7 @@ rule token = parse
   | '\n'
       { token lexbuf }
   (* Commentaires *)
-  | "\\"[^'\n']*('\n'|eof)
+  | "//"[^'\n']*('\n'|eof)
       { token lexbuf }
   (* Les chaînes alphabétiques sont traitées par la fonction [id_or_keyword]
      pour être associées à des mots-clés ou des identifiants. *)
