@@ -1,0 +1,28 @@
+{
+    let file = Sys.argv.(1)
+    (* On ouvre un canal pour écrire dans un fichier, dont le nom est contenu en ajoutant .html au nom de fichier d'entrée. *)
+    let c_out = open_out (file ^ ".html")
+    let print s = Printf.fprintf c_out s
+
+    let keywords = [ "var"; "integer"; "boolean"; "main; "print"; "if"; "else"; "while" ]
+}
+
+    rule translate = parse
+        | ['a' - 'z']+ as s
+            { if List.mem s keywords
+              then print "<font color=\"red\">%s</font>" s
+              else print "%s" s;
+              translate lexbuf }
+        | _ as c
+            { print "%c" c;
+              translate lexbuf }
+        | eof
+            { () }
+
+{
+    let _ =
+        print "<html><head><title>%s</title></head><body><pre>" file;
+        translate (Lexing.from_channel (open_in file));
+        print "</pre></body></html>";
+        close-out c-out
+}
