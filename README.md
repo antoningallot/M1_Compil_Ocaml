@@ -1,8 +1,6 @@
 # Rendu numéro 1 - Projet Compilation - Rémi Bardes, Nicolas Devatine
 
-Sources : https://github.com/BardesRemi/M1_Compil_Ocaml
-
-Rendu 1 : 09/14/18 -> 09/26/18
+09/14/18 -> 09/26/18
 	
 ## Travail effectué :
 

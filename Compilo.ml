@@ -14,10 +14,9 @@ let file =
 
 let () =
   let c  = open_in file in
-  let nc = in_channel_length c in
-  let text = really_input_string c nc in
+  let lb = Lexing.from_channel c in
+  let prog = SourceParser.prog SourceLexer.token lb in
   close_in c;
-  let prog = MlSourceParser.parse_text text in
   let _ = SourceTypeChecker.typecheck_program prog in
   let prog = SourceToImp.strip_program prog in
   let prog = ImpToGoto.translate_program prog in
