@@ -1,1 +1,2 @@
 java -jar Mars4_5.jar ic circle.asm pa 36
+ocamlbuild -package str Compilo.native //Compiler avec le package Str chargé

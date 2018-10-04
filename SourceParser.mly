@@ -23,6 +23,7 @@
 %token MAIN
 %token IF ELSE WHILE FOR
 %token SEMI COMMA
+%token HASHTAG
 %token SET PRINT
 %token BEGIN END
 %token EOF

@@ -1,6 +1,7 @@
 open Format
 
 let usage = "usage: ./compilo [options] file.cid"
+let preprocessing = ref false
 
 let file =
     let file = ref None in
@@ -9,12 +10,24 @@ let file =
         raise (Arg.Bad "no .cid extension");
       file := Some s
     in
-    Arg.parse [] set_file usage;
+    Arg.parse [("-pp", Arg.Set preprocessing, "Enable preprocessing for macros")] set_file usage;
     match !file with Some f -> f | None -> Arg.usage [] usage; exit 1
 
-let () =
-  let c  = open_in file in
+
+let preproc pp =
+  let c = open_in file in
   let lb = Lexing.from_channel c in
+  match pp with
+  | true ->
+     let output_file = (Filename.chop_suffix file ".cid") ^ ".pp.cid" in
+     Preprocessor.preprocessor output_file lb;
+     open_in output_file
+  | false -> c
+     
+
+let () =
+  let c  = preproc !preprocessing in
+  let lb = Lexing.from_channel c in 
   let prog = SourceParser.prog SourceLexer.token lb in
   close_in c;
   let _ = SourceTypeChecker.typecheck_program prog in

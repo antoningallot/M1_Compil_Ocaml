@@ -1,7 +1,14 @@
-#DEFINE test (1 + 1)
+#DEFINE mult{2} #1 := #1*#2
+#DEFINE inception{1} #mult{a}{54} + #1
+#DEFINE pouet "ici se trouve le test 2"
 var integer i;
+var integer a;
+var integer j;
 
 main {
-    i := test;
+    #mult{i}{5864}
+    #inception{45}
+    j := #pouet;
     print(i)
+    print(j)
 }

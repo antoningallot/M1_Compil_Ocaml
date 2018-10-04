@@ -102,6 +102,8 @@ rule token = parse
       { SEMI }
   | ","
       { COMMA }
+  | "#"
+      { HASHTAG }
   (* Fin de fichier *)
   | eof
       { EOF }
