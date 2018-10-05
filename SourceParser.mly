@@ -27,6 +27,14 @@
 %token BEGIN END
 %token EOF
 
+%left EQUAL NEQ LE LT GE GT
+%left PLUS MINUS
+%left OR
+%left AND
+%left STAR DIV MOD
+%right NOT UMINUS
+%left SEMI
+
 (* Définition du symbole initial *)
 %start prog
 %type <SourceLocalisedAST.program> prog
@@ -89,9 +97,9 @@ instruction:
 | CONTINUE { Continue }
 | PRINT; LP; e=localised_expression; RP { Print(e) }
 | id=IDENT; SET; e=localised_expression { Set(Identifier (Id id), e) }
-| IF; LP; e=localised_expression; RP; BEGIN; i1=localised_instruction; END; ELSE; BEGIN; i2=localised_instruction; END { Conditional(e, i1, i2) }
-| WHILE; LP; e=localised_expression; RP; BEGIN; i=localised_instruction; END { Loop(e, i) }
-| FOR; LP; i1=localised_instruction; COMMA; e=localised_expression; COMMA; i2=localised_instruction; RP; BEGIN; i3=localised_instruction; END { ForLoop(i1, e, i2, i3) }
+| IF; LP; e=localised_expression; RP; i1=block; ELSE; i2=block { Conditional(e, i1, i2) }
+| WHILE; LP; e=localised_expression; RP; i=block { Loop(e, i) }
+| FOR; LP; i1=localised_instruction; COMMA; e=localised_expression; COMMA; i2=localised_instruction; RP; i3=block { ForLoop(i1, e, i2, i3) }
 | i1=localised_instruction; SEMI; i2=localised_instruction { Sequence(i1, i2) }
 ;
 
@@ -109,7 +117,7 @@ expression:
 | b=CONST_BOOL { Literal (Bool b) } 
 | id=IDENT { Location (Identifier (Id id)) }
 | LP; e=localised_expression; RP { e.expr }
-| MINUS; e=localised_expression { UnaryOp(Minus, e) }
+| MINUS; e=localised_expression %prec UMINUS { UnaryOp(Minus, e) }
 | NOT; e=localised_expression { UnaryOp(Not, e) }
 | e1=localised_expression; PLUS; e2=localised_expression { BinaryOp(Add, e1, e2) }
 | e1=localised_expression; MINUS; e2=localised_expression { BinaryOp(Sub, e1, e2) }
@@ -124,3 +132,4 @@ expression:
 | e1=localised_expression; GE; e2=localised_expression { BinaryOp(Ge, e1, e2) }
 | e1=localised_expression; AND; e2=localised_expression { BinaryOp(And, e1, e2) }
 | e1=localised_expression; OR; e2=localised_expression { BinaryOp(Or, e1, e2) }
+;
