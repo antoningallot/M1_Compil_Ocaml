@@ -103,7 +103,7 @@ rule token = parse
   | ","
       { COMMA }
   | "#"
-      { HASHTAG }
+      { HASH }
   (* Fin de fichier *)
   | eof
       { EOF }

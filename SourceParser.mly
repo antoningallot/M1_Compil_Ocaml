@@ -23,7 +23,7 @@
 %token MAIN
 %token IF ELSE WHILE FOR
 %token SEMI COMMA
-%token HASHTAG
+%token HASH
 %token SET PRINT
 %token BEGIN END
 %token EOF
@@ -58,6 +58,8 @@ var_decls:
 (* Si pas de déclaration, on renvoie la table vide. *)
 | (* empty *)  { Symb_Tbl.empty }
 (* Sinon : à compléter ! *)
+| VAR; INTEGER; id=IDENT; SEMI; vars=var_decls { Symb_Tbl.add id TypInt vars }
+| VAR; BOOLEAN; id=IDENT; SEMI; vars=var_decls { Symb_Tbl.add id TypBool vars }	     
 ;
 
 (* Bloc de code principal, formé du mot-clé [main] suivi par le bloc
@@ -86,4 +88,40 @@ instruction:
 (* Si pas d'instruction, on renvoie l'instruction neutre. *)
 | (* empty *)  { Nop }
 (* Sinon : à compléter ! *)
+| PRINT; LP; e=localised_expression; RP { }
+| id=IDENT; SET; e=localised_expression { }
+| IF; LP; e=localised_expression; RP; BEGIN; i1=localised_instruction; END; ELSE; BEGIN; i2=localised_instruction; END { }
+| WHILE; LP; e=localised_expression; RP; BEGIN; i=localised_instruction; END { }
+| FOR; LP; i1=localised_instruction; COMA; e=localised_expression; COMA; i2=localised_instruction; RP; BEGIN; i3=localised_instruction; END { }
+| i1=localised_instruction; SEMI; i2=localised_instruction { Sequence(i1, i2) }
 ;
+
+localised_expression:
+| e=expression { let l = $startpos.pos_lnum in
+                 let c = $startpos.pos_cnum - $startpos.pos_bol in
+                 mk_expr e l c }
+;
+
+(* Expressions *)
+expression:
+(* Si pas d'exression, on renvoie une erreur *)
+| (* empty *) { }
+| i=CONST_INT { Literal (Int n) }
+| b=CONST_BOOL { } 
+| id=IDENT { Location (Identifier (Id id)) }
+| LP; e=localised_expression; RP { }
+| MINUS; e=localised_expression { }
+| NOT; e=localised_expression { }
+| e1=localised_expression; PLUS; e2=localised_expression { }
+| e1=localised_expression; MINUS; e2=localised_expression { }
+| e1=localised_expression; STAR; e2=localised_expression { }
+| e1=localised_expression; DIV; e2=localised_expression { }
+| e1=localised_expression; MOD; e2=localised_expression { }
+| e1=localised_expression; EQUAL; e2=localised_expression { }
+| e1=localised_expression; NEQ; e2=localised_expression { }
+| e1=localised_expression; LT; e2=localised_expression { }
+| e1=localised_expression; LE; e2=localised_expression { }
+| e1=localised_expression; GT; e2=localised_expression { }
+| e1=localised_expression; GE; e2=localised_expression { }
+| e1=localised_expression; AND; e2=localised_expression { }
+| e1=localised_expression; OR; e2=localised_expression { }
