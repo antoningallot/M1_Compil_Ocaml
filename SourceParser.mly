@@ -23,7 +23,6 @@
 %token MAIN
 %token IF ELSE WHILE FOR
 %token SEMI COMMA
-%token HASH
 %token SET PRINT
 %token BEGIN END
 %token EOF
@@ -57,7 +56,6 @@ prog:
 var_decls:
 (* Si pas de déclaration, on renvoie la table vide. *)
 | (* empty *)  { Symb_Tbl.empty }
-(* Sinon : à compléter ! *)
 | VAR; INTEGER; id=IDENT; SEMI; vars=var_decls { Symb_Tbl.add id TypInt vars }
 | VAR; BOOLEAN; id=IDENT; SEMI; vars=var_decls { Symb_Tbl.add id TypBool vars }	     
 ;
@@ -87,12 +85,13 @@ localised_instruction:
 instruction:
 (* Si pas d'instruction, on renvoie l'instruction neutre. *)
 | (* empty *)  { Nop }
-(* Sinon : à compléter ! *)
-| PRINT; LP; e=localised_expression; RP { }
-| id=IDENT; SET; e=localised_expression { }
-| IF; LP; e=localised_expression; RP; BEGIN; i1=localised_instruction; END; ELSE; BEGIN; i2=localised_instruction; END { }
-| WHILE; LP; e=localised_expression; RP; BEGIN; i=localised_instruction; END { }
-| FOR; LP; i1=localised_instruction; COMMA; e=localised_expression; COMMA; i2=localised_instruction; RP; BEGIN; i3=localised_instruction; END { }
+| BREAK { Break }
+| CONTINUE { Continue }
+| PRINT; LP; e=localised_expression; RP { Print(e) }
+| id=IDENT; SET; e=localised_expression { Set(Identifier (Id id), e) }
+| IF; LP; e=localised_expression; RP; BEGIN; i1=localised_instruction; END; ELSE; BEGIN; i2=localised_instruction; END { Conditional(e, i1, i2) }
+| WHILE; LP; e=localised_expression; RP; BEGIN; i=localised_instruction; END { Loop(e, i) }
+| FOR; LP; i1=localised_instruction; COMMA; e=localised_expression; COMMA; i2=localised_instruction; RP; BEGIN; i3=localised_instruction; END { ForLoop(i1, e, i2, i3) }
 | i1=localised_instruction; SEMI; i2=localised_instruction { Sequence(i1, i2) }
 ;
 
@@ -105,23 +104,23 @@ localised_expression:
 (* Expressions *)
 expression:
 (* Si pas d'exression, on renvoie une erreur *)
-| (* empty *) { }
+| (* empty *) { failwith "Parser: No expression" }
 | i=CONST_INT { Literal (Int i) }
 | b=CONST_BOOL { Literal (Bool b) } 
 | id=IDENT { Location (Identifier (Id id)) }
-| LP; e=localised_expression; RP { e }
-| op=MINUS; e=localised_expression { Un }
-| op=NOT; e=localised_expression { }
-| e1=localised_expression; PLUS; e2=localised_expression { }
-| e1=localised_expression; MINUS; e2=localised_expression { }
-| e1=localised_expression; STAR; e2=localised_expression { }
-| e1=localised_expression; DIV; e2=localised_expression { }
-| e1=localised_expression; MOD; e2=localised_expression { }
-| e1=localised_expression; EQUAL; e2=localised_expression { }
-| e1=localised_expression; NEQ; e2=localised_expression { }
-| e1=localised_expression; LT; e2=localised_expression { }
-| e1=localised_expression; LE; e2=localised_expression { }
-| e1=localised_expression; GT; e2=localised_expression { }
-| e1=localised_expression; GE; e2=localised_expression { }
-| e1=localised_expression; AND; e2=localised_expression { }
-| e1=localised_expression; OR; e2=localised_expression { }
+| LP; e=localised_expression; RP { e.expr }
+| MINUS; e=localised_expression { UnaryOp(Minus, e) }
+| NOT; e=localised_expression { UnaryOp(Not, e) }
+| e1=localised_expression; PLUS; e2=localised_expression { BinaryOp(Add, e1, e2) }
+| e1=localised_expression; MINUS; e2=localised_expression { BinaryOp(Sub, e1, e2) }
+| e1=localised_expression; STAR; e2=localised_expression { BinaryOp(Mult, e1, e2) }
+| e1=localised_expression; DIV; e2=localised_expression { BinaryOp(Div, e1, e2) }
+| e1=localised_expression; MOD; e2=localised_expression { BinaryOp(Mod, e1, e2) }
+| e1=localised_expression; EQUAL; e2=localised_expression { BinaryOp(Eq, e1, e2) }
+| e1=localised_expression; NEQ; e2=localised_expression { BinaryOp(Neq, e1, e2) }
+| e1=localised_expression; LT; e2=localised_expression { BinaryOp(Lt, e1, e2) }
+| e1=localised_expression; LE; e2=localised_expression { BinaryOp(Le, e1, e2) }
+| e1=localised_expression; GT; e2=localised_expression { BinaryOp(Gt, e1, e2) }
+| e1=localised_expression; GE; e2=localised_expression { BinaryOp(Ge, e1, e2) }
+| e1=localised_expression; AND; e2=localised_expression { BinaryOp(And, e1, e2) }
+| e1=localised_expression; OR; e2=localised_expression { BinaryOp(Or, e1, e2) }
