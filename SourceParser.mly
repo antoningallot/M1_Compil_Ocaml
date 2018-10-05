@@ -92,7 +92,7 @@ instruction:
 | id=IDENT; SET; e=localised_expression { }
 | IF; LP; e=localised_expression; RP; BEGIN; i1=localised_instruction; END; ELSE; BEGIN; i2=localised_instruction; END { }
 | WHILE; LP; e=localised_expression; RP; BEGIN; i=localised_instruction; END { }
-| FOR; LP; i1=localised_instruction; COMA; e=localised_expression; COMA; i2=localised_instruction; RP; BEGIN; i3=localised_instruction; END { }
+| FOR; LP; i1=localised_instruction; COMMA; e=localised_expression; COMMA; i2=localised_instruction; RP; BEGIN; i3=localised_instruction; END { }
 | i1=localised_instruction; SEMI; i2=localised_instruction { Sequence(i1, i2) }
 ;
 
@@ -106,12 +106,12 @@ localised_expression:
 expression:
 (* Si pas d'exression, on renvoie une erreur *)
 | (* empty *) { }
-| i=CONST_INT { Literal (Int n) }
-| b=CONST_BOOL { } 
+| i=CONST_INT { Literal (Int i) }
+| b=CONST_BOOL { Literal (Bool b) } 
 | id=IDENT { Location (Identifier (Id id)) }
-| LP; e=localised_expression; RP { }
-| MINUS; e=localised_expression { }
-| NOT; e=localised_expression { }
+| LP; e=localised_expression; RP { e }
+| op=MINUS; e=localised_expression { Un }
+| op=NOT; e=localised_expression { }
 | e1=localised_expression; PLUS; e2=localised_expression { }
 | e1=localised_expression; MINUS; e2=localised_expression { }
 | e1=localised_expression; STAR; e2=localised_expression { }
