@@ -1,16 +1,9 @@
 {
-  (**
-     1-  output en @param des regles
-     2-  Str chargement forcé ? Comment fonctionne le module / ou existe t'il un autre moyen ?
-     3-  Bcp de ref, est-ce grave ?
-     4-  Peut_on isolé des partie d'une expr régulière dans des variable (plutot que ... as ... as ... as ... as etc) ?
-     5- doit-on gérer l'inception ?
-     6- les #DEFINE doivent-ils apparaitrent dans le .pp.cid ?
-  **)
   (* Contexte *)
   open Lexing
   let macros = Hashtbl.create 20
   let temp_key = ref ("",0)
+  let temp_macrotext = ref ""
   let temp_name = ref ""
   let temp_args = ref []
   let print_file f s = Printf.fprintf f s
@@ -20,7 +13,7 @@
        on le renvoie. *)
     try  Hashtbl.find macros s
     (* Le nom de macro recherché n'a pas été définie *)
-    with Not_found -> failwith ("unknown macro name")
+    with Not_found -> Printf.printf "%s" (fst s); failwith ("unknown macro name")
 
   let replace_args s l =
     let rec replace_args_rec l n res =
@@ -42,7 +35,7 @@ let number = ['1'-'9']['0'-'9']* | '0'
 rule read output = parse
   (* On repère une définition de macro *)
   | "#DEFINE "
-      { macro_name output lexbuf }
+      { Printf.printf "# Define touvé "; macro_name output lexbuf }
   (* On repère une macro dans la partie main *)
   | "#"
       { macro_search_name output lexbuf }
@@ -52,32 +45,76 @@ rule read output = parse
       { close_out output }
   | _
       { print_file output "%s" (lexeme lexbuf); read output lexbuf }
+      
 and macro_name output = parse
     | (alpha+ as name)
      "{"
       (number as nb)
-     "}"
-	{ temp_key := (name, int_of_string(nb)) ;
-	  macro_name output lexbuf }
-    | alpha+
-	{ temp_key := ((lexeme lexbuf),0) ;
-	  macro_name output lexbuf }
-    |" "
-	{ macro_text output lexbuf }
+     "} "
+     { temp_key := (name, int_of_string(nb)) ;
+       macro_text output lexbuf }
+    | alpha+ as name
+      " "
+	{ temp_key := (name,0) ;
+	  macro_text output lexbuf }
     | _
 	{ failwith ("Invalide macro definition")}
+	
 and macro_text output = parse
-    | [^'\n']+
-	{ Hashtbl.add macros !temp_key (lexeme lexbuf); macro_text output lexbuf }
+    | [^'\n''#']+ as text
+	{ temp_macrotext := !temp_macrotext^text ; macro_text output lexbuf }
+    | '#'number as text
+	{ temp_macrotext := !temp_macrotext^text; macro_text output lexbuf }
+    | '#'
+	{ macro_search_inception_name output lexbuf }
     | '\n'
-	{ read output lexbuf }
+	{ Hashtbl.add macros !temp_key (!temp_macrotext);
+	  temp_macrotext := "";
+	  read output lexbuf }
     | eof
-	{ failwith ("Define not finished before end of file") }
+      { failwith ("Define not finished before end of file") }
+
+and macro_search_inception_name output = parse
+    | alpha+
+	{ temp_name := (lexeme lexbuf);
+	  macro_search_inception_args output lexbuf }
+
+and macro_search_inception_args output = parse
+    |'{'
+      ([^'}']* as arg)
+     '}'
+	{ temp_args := arg::!temp_args;
+	  macro_search_inception_args output lexbuf }
+    |_
+	{
+	  let text = find_macro (!temp_name,List.length !temp_args) in
+	  if (List.length !temp_args) > 0
+	  then
+	    begin
+	      temp_args := List.rev !temp_args;
+	      temp_macrotext := !temp_macrotext^(replace_args text !temp_args)
+	    end
+	  else
+	    temp_macrotext := !temp_macrotext^text;
+	  temp_args := [];
+	  if ((lexeme lexbuf) = "\n")
+	  then
+	    begin
+	      Hashtbl.add macros !temp_key (!temp_macrotext);
+	      temp_macrotext := "";
+	      read output lexbuf
+	    end
+	  else
+	    begin
+	      temp_macrotext := !temp_macrotext^(lexeme lexbuf);
+	      macro_text output lexbuf
+	    end
+	}
+	
 and macro_search_name output = parse
     | alpha+
 	{ temp_name := lexeme lexbuf;
-	  macro_search_args output lexbuf
-	}
+	  macro_search_args output lexbuf }
 and macro_search_args output = parse
     |'{'
       ([^'}']* as arg)
@@ -87,14 +124,13 @@ and macro_search_args output = parse
     |_
 	{
 	  let text = find_macro (!temp_name,List.length !temp_args) in
-	  if List.length !temp_args > 0
+	  if ((List.length !temp_args) > 0)
 	  then
 	    begin
 	      temp_args := List.rev !temp_args;
-	      print_file output "%s" (replace_args text !temp_args)
+	      print_file output "%s" (replace_args text !temp_args);
 	    end
-	  else
-	    print_file output "%s" text;
+	  else print_file output "%s" text;
 	  temp_args := [];
 	  print_file output "%s" (lexeme lexbuf);
 	  read output lexbuf;
