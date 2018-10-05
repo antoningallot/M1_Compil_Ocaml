@@ -5,6 +5,7 @@
      3-  Bcp de ref, est-ce grave ?
      4-  Peut_on isolé des partie d'une expr régulière dans des variable (plutot que ... as ... as ... as ... as etc) ?
      5- doit-on gérer l'inception ?
+     6- les #DEFINE doivent-ils apparaitrent dans le .pp.cid ?
   **)
   (* Contexte *)
   open Lexing
@@ -53,7 +54,7 @@ rule read output = parse
 and macro_name output = parse
     | alpha+ as name
      "{"
-      number as nb
+      (number as nb)
      "}"
 	{ print_file output "%s" (lexeme lexbuf); temp_key := (name, int_of_string((String.sub nb ((String.length name)+1) ((String.length nb) - ((String.length name)+1))))) ;
 	  macro_name output lexbuf }
