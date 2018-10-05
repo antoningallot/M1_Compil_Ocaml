@@ -27,10 +27,11 @@
 %token BEGIN END
 %token EOF
 
-%left EQUAL NEQ LE LT GE GT
-%left PLUS MINUS
 %left OR
 %left AND
+%left EQUAL NEQ
+%left LE LT GE GT
+%left PLUS MINUS
 %left STAR DIV MOD
 %right NOT UMINUS
 %left SEMI
