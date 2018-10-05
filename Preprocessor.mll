@@ -9,7 +9,6 @@
   **)
   (* Contexte *)
   open Lexing
-  open Str
   let macros = Hashtbl.create 20
   let temp_key = ref ("",0)
   let temp_name = ref ""
@@ -41,8 +40,10 @@ let number = ['1'-'9']['0'-'9']* | '0'
 
 (* Expressions régulières définissant les lexèmes *)
 rule read output = parse
+  (* On repère une définition de macro *)
   | "#DEFINE "
-      { print_file output "%s" (lexeme lexbuf); macro_name output lexbuf }
+      { macro_name output lexbuf }
+  (* On repère une macro dans la partie main *)
   | "#"
       { macro_search_name output lexbuf }
   | '\n'|' '|'\t'
@@ -52,22 +53,24 @@ rule read output = parse
   | _
       { print_file output "%s" (lexeme lexbuf); read output lexbuf }
 and macro_name output = parse
-    | alpha+ as name
+    | (alpha+ as name)
      "{"
       (number as nb)
      "}"
-	{ print_file output "%s" (lexeme lexbuf); temp_key := (name, int_of_string((String.sub nb ((String.length name)+1) ((String.length nb) - ((String.length name)+1))))) ;
+	{ temp_key := (name, int_of_string(nb)) ;
 	  macro_name output lexbuf }
     | alpha+
-	{ print_file output "%s" (lexeme lexbuf); temp_key := ((lexeme lexbuf),0) ;
+	{ temp_key := ((lexeme lexbuf),0) ;
 	  macro_name output lexbuf }
     |" "
-	{ print_file output "%s" (lexeme lexbuf); macro_text output lexbuf }
+	{ macro_text output lexbuf }
     | _
 	{ failwith ("Invalide macro definition")}
 and macro_text output = parse
     | [^'\n']+
-	{ print_file output "%s" (lexeme lexbuf); Hashtbl.add macros !temp_key (lexeme lexbuf); read output lexbuf }
+	{ Hashtbl.add macros !temp_key (lexeme lexbuf); macro_text output lexbuf }
+    | '\n'
+	{ read output lexbuf }
     | eof
 	{ failwith ("Define not finished before end of file") }
 and macro_search_name output = parse
@@ -77,9 +80,9 @@ and macro_search_name output = parse
 	}
 and macro_search_args output = parse
     |'{'
-      [^'}']* as arg
+      ([^'}']* as arg)
      '}'
-	{ temp_args := (String.sub arg 1 ((String.length arg) - 1))::!temp_args;
+	{ temp_args := arg::!temp_args;
 	  macro_search_args output lexbuf }
     |_
 	{
